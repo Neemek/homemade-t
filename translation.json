@@ -1,0 +1,8 @@
+{
+    "en": {
+        "info.helloworld": "Hello world!"
+    },
+    "no": {
+        "info.helloworld": "Hei verden!"
+    }
+}
