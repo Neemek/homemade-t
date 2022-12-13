@@ -2,6 +2,7 @@ import { readFileSync } from "fs";
 
 interface TOptions {
 	onlySingleSpaces?: boolean;
+	noTrailingSpaces?: boolean;
 }
 
 interface TFunction {
@@ -9,11 +10,11 @@ interface TFunction {
 }
 
 interface LocaleSetter {
-	(key);
+	(locale: string): void;
 }
 
 class makeT {
-	fromJSON(
+	static fromJSON(
 		data: object,
 		defaultLocale: string
 	): [TFunction, LocaleSetter] | undefined {
@@ -42,13 +43,15 @@ class makeT {
 			(
 				key: string,
 				keymap: object = {},
-				options: TOptions = { onlySingleSpaces: true }
+				options: TOptions = { onlySingleSpaces: true, noTrailingSpaces: true }
 			): string => {
 				let value = this.replaceWithKeys(lookup.get(locale)?.get(key), keymap);
 				if (value === undefined) return key;
 
-				if (options.onlySingleSpaces) return value?.replace(/ {2,}/g, " ");
-				else return value;
+				if (options.onlySingleSpaces)
+					value = value?.replace(/ {2,}/g, " ").replace(/ (?=[\!\?])/g, "");
+
+				return value;
 			},
 			(newLocale: string): void => {
 				locale = newLocale;
@@ -56,7 +59,7 @@ class makeT {
 		];
 	}
 
-	fromFile(
+	static fromFile(
 		filePath: string,
 		defaultLocale: string
 	): [TFunction, LocaleSetter] | undefined {
@@ -65,18 +68,54 @@ class makeT {
 		return this.fromJSON(data, defaultLocale);
 	}
 
-	private replaceWithKeys(
+	private static replaceWithKeys(
 		text: string | undefined,
 		keymap: object = {}
 	): string | undefined {
+		if (Object.keys(keymap).length === 0) return text;
 		if (text === undefined || text === "") return undefined;
 
-		for (let key in Object.keys(keymap)) {
+		for (let key of Object.keys(keymap)) {
 			text = text.replace(`{{${key}}}`, keymap[key]);
 		}
 
-		return text;
+		return text.replace(/\{\{[\w\.]+\}\}/g, "");
 	}
 }
+
+//*   Test case:
+// const [t, setLocale] = makeT.fromJSON(
+// 	{
+// 		en: {
+// 			"info.hello": "Hello {{adjectives}} {{subject}}!",
+// 			"info.subjects.world": "world",
+// 			"info.adjectives.cool": "cool",
+// 		},
+// 		es: {
+// 			"info.hello": "Hola {{subject}} {{adjectives}}!",
+// 			"info.subjects.world": "mundo",
+// 			"info.adjectives.cool": "genial",
+// 		},
+// 	},
+// 	"en"
+// );
+
+// // Locale is by default english (defined in init as "en")
+// console.log(t("info.hello", { subject: t("info.subjects.world") }));
+// console.log(
+// 	t("info.hello", {
+// 		subject: "Monkee 🐒",
+// 		adjectives: t("info.adjectives.cool"),
+// 	})
+// );
+
+// setLocale("es"); // Change locale to Español  (Spanish)
+// console.log(t("info.hello", { subject: t("info.subjects.world") })); // Outputs: Hola mundo!
+// console.log(
+// 	t("info.hello", {
+// 		subject: "Monkee 🐒",
+// 		adjectives: t("info.adjectives.cool"),
+// 	})
+// );
 
 export { makeT as default, TFunction, TOptions, LocaleSetter };
