@@ -13,7 +13,10 @@ interface LocaleSetter {
 }
 
 class makeT {
-	fromJSON(data: object): [TFunction, LocaleSetter] | undefined {
+	fromJSON(
+		data: object,
+		defaultLocale: string
+	): [TFunction, LocaleSetter] | undefined {
 		const lookup = new Map<string, Map<string, string>>();
 
 		let locales = [];
@@ -33,7 +36,7 @@ class makeT {
 		} catch {
 			return undefined;
 		}
-		let locale = locales.includes("en") ? "en" : locales.at(0);
+		let locale = defaultLocale;
 
 		return [
 			(
@@ -53,10 +56,13 @@ class makeT {
 		];
 	}
 
-	fromFile(filePath: string) {
+	fromFile(
+		filePath: string,
+		defaultLocale: string
+	): [TFunction, LocaleSetter] | undefined {
 		let data = JSON.parse(readFileSync(filePath).toString());
 
-		this.fromJSON(data);
+		return this.fromJSON(data, defaultLocale);
 	}
 
 	private replaceWithKeys(
