@@ -1,19 +1,30 @@
 {
   "name": "homemade-t",
   "type": "commonjs",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "Translation galore",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc index.ts"
+    "build": "tsc"
   },
-  "keywords": [],
+  "keywords": ["translation", "nodejs"],
   "author": "Neemek",
   "license": "MIT",
   "devDependencies": {
     "prettier": "2.8.1",
     "typescript": "^4.9.4",
     "@types/node": "^18.11.14"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Neemek/homemade-t.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Neemek/homemade-t/issues"
+  },
+  "homepage": "https://github.com/Neemek/homemade-t#readme"
 }
