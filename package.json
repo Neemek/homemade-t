@@ -9,7 +9,7 @@
     "build": "tsc index.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "Neemek",
   "license": "ISC",
   "devDependencies": {
     "prettier": "2.8.1",
