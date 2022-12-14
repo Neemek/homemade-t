@@ -7,7 +7,8 @@
 The first thing to do, is importing the `homemade-t` module.
 
 ```js
-const { makeT } = require("homemade-t");
+const { TMaker } = require("homemade-t");
+const makeT = new TMaker("en");
 ```
 
 `makeT` makes `T` functions (obviously).
@@ -23,15 +24,14 @@ const t = makeT.fromJSON(
 		es: {
 			"info.helloworld": "Hola mundo!",
 		},
-	},
-	"en"
+	}
 );
 ```
 
 or
 
 ```js
-const [t, setLocale] = makeT.fromJSONFile("./translations.json", "en"); // also returns a TFunction
+const [t, setLocale] = makeT.fromJSONFile("./translations.json"); // also returns a TFunction
 ```
 
 ### JSON data format 🪅
@@ -46,9 +46,9 @@ const [t, setLocale] = makeT.fromJSONFile("./translations.json", "en"); // also 
 		"info.adjectives.cool": "cool" // "category.subcategory.key"
 	},
 	"es": {
-		"info.hello": "Hola {{subject}} {{adjectives}}!", // Placing
+		"info.hello": "Hola {{subject}} {{adjectives}}!", // Woah! Adjectives behind???
 		"info.subjects.world": "mundo",
-		"info.adjectives.cool": "genial" // "category.key"
+		"info.adjectives.cool": "genial"
 	}
 }
 ```

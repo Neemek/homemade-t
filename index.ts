@@ -13,11 +13,16 @@ interface LocaleSetter {
 	(locale: string): void;
 }
 
-class makeT {
-	static fromJSON(
-		data: object,
-		defaultLocale: string
-	): [TFunction, LocaleSetter] | undefined {
+interface MakeT {
+	locale: string;
+	fromJSON(data: object): [TFunction, LocaleSetter];
+	fromJSONFile(filePath: string): [TFunction, LocaleSetter];
+	replaceWithKeys(text: string | undefined, keymap: object): string | undefined;
+}
+
+export class TMaker implements MakeT {
+	constructor(public locale: string) {}
+	fromJSON(data: object): [TFunction, LocaleSetter] {
 		const lookup = new Map<string, Map<string, string>>();
 
 		let locales = [];
@@ -34,18 +39,19 @@ class makeT {
 
 				lookup.set(locale, localization);
 			}
-		} catch {
-			return undefined;
+		} catch (e) {
+			throw e;
 		}
-		let locale = defaultLocale;
-
 		return [
 			(
 				key: string,
 				keymap: object = {},
 				options: TOptions = { onlySingleSpaces: true, noTrailingSpaces: true }
 			): string => {
-				let value = this.replaceWithKeys(lookup.get(locale)?.get(key), keymap);
+				let value = this.replaceWithKeys(
+					lookup.get(this.locale).get(key),
+					keymap
+				);
 				if (value === undefined) return key;
 
 				if (options.onlySingleSpaces)
@@ -54,21 +60,18 @@ class makeT {
 				return value;
 			},
 			(newLocale: string): void => {
-				locale = newLocale;
+				this.locale = newLocale;
 			},
 		];
 	}
 
-	static fromFile(
-		filePath: string,
-		defaultLocale: string
-	): [TFunction, LocaleSetter] | undefined {
+	fromJSONFile(filePath: string): [TFunction, LocaleSetter] {
 		let data = JSON.parse(readFileSync(filePath).toString());
 
-		return this.fromJSON(data, defaultLocale);
+		return this.fromJSON(data);
 	}
 
-	private static replaceWithKeys(
+	replaceWithKeys(
 		text: string | undefined,
 		keymap: object = {}
 	): string | undefined {
@@ -118,4 +121,4 @@ class makeT {
 // 	})
 // );
 
-export { makeT as default, TFunction, TOptions, LocaleSetter };
+// export { makeT as default, TFunction, TOptions, LocaleSetter };
