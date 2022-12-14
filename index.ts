@@ -32,7 +32,7 @@ export class TMaker implements MakeT {
 
 			for (let locale of locales) {
 				const localization = new Map<string, string>();
-				const localizationData = data[locale];
+				const localizationData = Object.entries(data).find(([k, _v]) => k === locale)?.[1] ?? "";
 				for (let valueKey of Object.keys(localizationData)) {
 					localization.set(valueKey, localizationData[valueKey]);
 				}
@@ -49,7 +49,7 @@ export class TMaker implements MakeT {
 				options: TOptions = { onlySingleSpaces: true, noTrailingSpaces: true }
 			): string => {
 				let value = this.replaceWithKeys(
-					lookup.get(this.locale).get(key),
+					lookup.get(this.locale)?.get(key),
 					keymap
 				);
 				if (value === undefined) return key;
@@ -75,50 +75,13 @@ export class TMaker implements MakeT {
 		text: string | undefined,
 		keymap: object = {}
 	): string | undefined {
-		if (Object.keys(keymap).length === 0) return text;
+		if (keymap === undefined || Object.keys(keymap).length === 0) return text;
 		if (text === undefined || text === "") return undefined;
 
 		for (let key of Object.keys(keymap)) {
-			text = text.replace(`{{${key}}}`, keymap[key]);
+			text = text.replace(`{{${key}}}`, Object.entries(keymap).find(([k, _v]) => k === key)?.[1] ?? "");
 		}
 
 		return text.replace(/\{\{[\w\.]+\}\}/g, "");
 	}
 }
-
-//*   Test case:
-// const [t, setLocale] = makeT.fromJSON(
-// 	{
-// 		en: {
-// 			"info.hello": "Hello {{adjectives}} {{subject}}!",
-// 			"info.subjects.world": "world",
-// 			"info.adjectives.cool": "cool",
-// 		},
-// 		es: {
-// 			"info.hello": "Hola {{subject}} {{adjectives}}!",
-// 			"info.subjects.world": "mundo",
-// 			"info.adjectives.cool": "genial",
-// 		},
-// 	},
-// 	"en"
-// );
-
-// // Locale is by default english (defined in init as "en")
-// console.log(t("info.hello", { subject: t("info.subjects.world") }));
-// console.log(
-// 	t("info.hello", {
-// 		subject: "Monkee 🐒",
-// 		adjectives: t("info.adjectives.cool"),
-// 	})
-// );
-
-// setLocale("es"); // Change locale to Español  (Spanish)
-// console.log(t("info.hello", { subject: t("info.subjects.world") })); // Outputs: Hola mundo!
-// console.log(
-// 	t("info.hello", {
-// 		subject: "Monkee 🐒",
-// 		adjectives: t("info.adjectives.cool"),
-// 	})
-// );
-
-// export { makeT as default, TFunction, TOptions, LocaleSetter };
